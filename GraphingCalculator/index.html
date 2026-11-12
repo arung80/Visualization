@@ -88,7 +88,7 @@ canvas#g{position:absolute;left:0;top:0;width:320px;height:222px}
 .lbl{height:14px;display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;font-weight:600;padding:0 3px;white-space:nowrap}
 .lbl .s2{color:#2c66c8}.lbl .sa{color:#3d9a3d}
 button.key{height:33px;border-radius:8px;border:1px solid #c4c4c4;background:linear-gradient(180deg,#ffffff,#e9e9e7);box-shadow:0 2px 0 #b3b3b0,0 3px 4px rgba(0,0,0,.15);font:600 14px system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#222;cursor:pointer;padding:0;touch-action:manipulation}
-button.key:active,button.key.down{transform:translateY(2px);box-shadow:0 0 0 #b3b3b0}
+button.key:active,button.key.pressed{transform:translateY(2px);box-shadow:0 0 0 #b3b3b0}
 button.key.num{background:linear-gradient(180deg,#34373b,#1f2124);color:#fff;border-color:#111;box-shadow:0 2px 0 #000,0 3px 4px rgba(0,0,0,.25);font-size:17px}
 button.key.k2nd{background:linear-gradient(180deg,#3a74d6,#2257b5);color:#fff;border-color:#1b4793;box-shadow:0 2px 0 #163a7a}
 button.key.kal{background:linear-gradient(180deg,#5cbd5c,#3f9b3f);color:#fff;border-color:#2f7a2f;box-shadow:0 2px 0 #2a6a2a}
@@ -99,11 +99,11 @@ button.key.top{height:30px;border-radius:7px 7px 14px 14px;font-size:13px}
 .fracico b{display:block;width:12px;height:1.5px;background:#222}
 #dpad{grid-column:4/span 2;grid-row:span 2;position:relative;height:100px;margin-top:2px}
 #dpad button{position:absolute;background:linear-gradient(180deg,#34373b,#1f2124);border:1px solid #111;color:#fff;cursor:pointer;font-size:12px;box-shadow:0 2px 0 #000;padding:0}
-#dpad button:active,#dpad button.down{transform:translateY(2px);box-shadow:none}
-#dpad .up{left:50%;top:2px;width:56px;height:34px;margin-left:-28px;border-radius:14px 14px 6px 6px}
-#dpad .down{left:50%;bottom:2px;width:56px;height:34px;margin-left:-28px;border-radius:6px 6px 14px 14px}
-#dpad .left{left:6px;top:50%;width:44px;height:40px;margin-top:-20px;border-radius:14px 6px 6px 14px}
-#dpad .right{right:6px;top:50%;width:44px;height:40px;margin-top:-20px;border-radius:6px 14px 14px 6px}
+#dpad button:active,#dpad button.pressed{transform:translateY(2px);box-shadow:none}
+#dpad .dp-up{left:50%;top:2px;width:56px;height:34px;margin-left:-28px;border-radius:14px 14px 6px 6px}
+#dpad .dp-down{left:50%;bottom:2px;width:56px;height:34px;margin-left:-28px;border-radius:6px 6px 14px 14px}
+#dpad .dp-left{left:6px;top:50%;width:44px;height:40px;margin-top:-20px;border-radius:14px 6px 6px 14px}
+#dpad .dp-right{right:6px;top:50%;width:44px;height:40px;margin-top:-20px;border-radius:6px 14px 14px 6px}
 .foot{text-align:center;font-size:10px;letter-spacing:2px;color:#8a8f96;margin-top:12px;font-weight:700}
 .hint{max-width:520px;font-size:12px;color:#4a5260;text-align:center;line-height:1.5;margin:4px 12px 18px}
 .hint kbd{background:#fff;border:1px solid #bbb;border-radius:3px;padding:0 4px;font-size:11px}
@@ -408,7 +408,7 @@ function oneVar(L){const n=L.length;if(!n)E('INVALID DIM');const s=sortedC(L),su
   return{n,mean:m,sum,sum2,sx,px,min:s[0],max:s[n-1],q1:lo.length?medianOf(lo):s[0],med:medianOf(s),q3:hi.length?medianOf(hi):s[0]}}
 function pairs(st,minN){const X=listFromNode(st.args[0],'L₁'),Y=listFromNode(st.args[1],'L₂');if(X.length!==Y.length)E('DIM MISMATCH');if(X.length<minN)E('INVALID DIM');return[X,Y]}
 function storeReg(st,idx,str){const yn=st.args[idx];if(yn&&yn.t==='y'){const k=YNAMES.indexOf(yn.n);S.Y[k].tokens=strToTokens(str);S.Y[k].on=true}}
-function linfit(X,Y){const n=X.length,mx=meanOf(X),my=meanOf(Y);let sxx=0,sxy=0,syy=0;for(let i=0;i<n;i++){sxx+=(X[i]-mx)**2;sxy+=(X[i]-mx)*(Y[i]-my);syy+=(Y[i]-my)**2}if(sxx===0)E('DIVIDE BY 0');const a=sxy/sxx,b=my-a*mx,r=syy===0?NaN:sxy/Math.sqrt(sxx*syy);return{a,b,r}}
+function linfit(X,Y){const n=X.length,mx=meanOf(X),my=meanOf(Y);let sxx=0,sxy=0,syy=0;for(let i=0;i<n;i++){sxx+=(X[i]-mx)**2;sxy+=(X[i]-mx)*(Y[i]-my);syy+=(Y[i]-my)**2}if(sxx===0)E('DIVIDE BY 0');let a=sxy/sxx,b=my-a*mx;const sc=Math.max(Math.abs(a),Math.abs(b));if(Math.abs(a)<1e-12*sc)a=0;if(Math.abs(b)<1e-12*sc)b=0;a=snap(a);b=snap(b);const r=syy===0?NaN:sxy/Math.sqrt(sxx*syy);return{a,b,r}}
 function solveLin(M){const n=M.length;M=M.map(r=>r.slice());for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;if(Math.abs(M[p][c])<1e-12)return null;[M[c],M[p]]=[M[p],M[c]];for(let r=0;r<n;r++){if(r===c)continue;const f=M[r][c]/M[c][c];for(let k=c;k<=n;k++)M[r][k]-=f*M[c][k]}}return M.map((r,i)=>r[n]/r[i])}
 function runCmd(st){
   const f=fmtNum;
@@ -418,7 +418,7 @@ function runCmd(st){
     case'1-Var Stats ':{const o=oneVar(listFromNode(st.args[0],'L₁'));return{lines:['1-Var Stats','x̄='+f(o.mean),'Σx='+f(o.sum),'Σx²='+f(o.sum2),'Sx='+(o.n>1?f(o.sx):'undef'),'σx='+f(o.px),'n='+f(o.n),'minX='+f(o.min),'Q1='+f(o.q1),'Med='+f(o.med),'Q3='+f(o.q3),'maxX='+f(o.max)]}}
     case'2-Var Stats ':{const[X,Y]=pairs(st,1),a=oneVar(X),b=oneVar(Y);const sxy=X.reduce((s,x,i)=>s+x*Y[i],0);return{lines:['2-Var Stats','x̄='+f(a.mean),'Σx='+f(a.sum),'Σx²='+f(a.sum2),'Sx='+(a.n>1?f(a.sx):'undef'),'σx='+f(a.px),'ȳ='+f(b.mean),'Σy='+f(b.sum),'Σy²='+f(b.sum2),'Sy='+(b.n>1?f(b.sx):'undef'),'σy='+f(b.px),'Σxy='+f(sxy),'n='+f(a.n),'minX='+f(a.min),'maxX='+f(a.max),'minY='+f(b.min),'maxY='+f(b.max)]}}
     case'LinReg(ax+b) ':{const[X,Y]=pairs(st,2),{a,b,r}=linfit(X,Y);storeReg(st,2,`${fmtNum(a)}X+${fmtNum(b)}`);return{lines:['LinReg','y=ax+b','a='+f(a),'b='+f(b),'r²='+(Number.isNaN(r)?'undef':f(r*r)),'r='+(Number.isNaN(r)?'undef':f(r))]}}
-    case'QuadReg ':{const[X,Y]=pairs(st,3);const sm=k=>X.reduce((s,x)=>s+x**k,0),sy=k=>X.reduce((s,x,i)=>s+x**k*Y[i],0);const sol=solveLin([[sm(4),sm(3),sm(2),sy(2)],[sm(3),sm(2),sm(1),sy(1)],[sm(2),sm(1),X.length,sy(0)]]);if(!sol)E('SINGULAR MAT');const[a,b,c]=sol,my=meanOf(Y);let sse=0,sst=0;X.forEach((x,i)=>{sse+=(Y[i]-(a*x*x+b*x+c))**2;sst+=(Y[i]-my)**2});storeReg(st,2,`${fmtNum(a)}X²+${fmtNum(b)}X+${fmtNum(c)}`);return{lines:['QuadReg','y=ax²+bx+c','a='+f(a),'b='+f(b),'c='+f(c),'R²='+(sst?f(1-sse/sst):'undef')]}}
+    case'QuadReg ':{const[X,Y]=pairs(st,3);const sm=k=>X.reduce((s,x)=>s+x**k,0),sy=k=>X.reduce((s,x,i)=>s+x**k*Y[i],0);const sol=solveLin([[sm(4),sm(3),sm(2),sy(2)],[sm(3),sm(2),sm(1),sy(1)],[sm(2),sm(1),X.length,sy(0)]]);if(!sol)E('SINGULAR MAT');const sc=Math.max(...sol.map(Math.abs)),[a,b,c]=sol.map(v=>Math.abs(v)<1e-11*sc?0:snap(v)),my=meanOf(Y);let sse=0,sst=0;X.forEach((x,i)=>{sse+=(Y[i]-(a*x*x+b*x+c))**2;sst+=(Y[i]-my)**2});storeReg(st,2,`${fmtNum(a)}X²+${fmtNum(b)}X+${fmtNum(c)}`);return{lines:['QuadReg','y=ax²+bx+c','a='+f(a),'b='+f(b),'c='+f(c),'R²='+(sst?f(1-sse/sst):'undef')]}}
     case'ExpReg ':{const[X,Y]=pairs(st,2);if(Y.some(y=>y<=0))E('DOMAIN');const{a,b,r}=linfit(X,Y.map(Math.log)),A=Math.exp(b),B=Math.exp(a);storeReg(st,2,`${fmtNum(A)}×${fmtNum(B)}^X`);return{lines:['ExpReg','y=a×b^x','a='+f(A),'b='+f(B),'r²='+f(r*r),'r='+f(r)]}}
   }E('SYNTAX')}
 
@@ -841,19 +841,19 @@ const KEYS=[
  ['on','on ⌂','off',''],['0','0','catalog','␣','num'],['dot','.','i',':','num'],['neg','(−)','Ans','?','num'],['enter','enter','entry',''],
 ];
 const REPEAT=new Set(['up','down','left','right','del']);
-function bindKey(btn,id){let t1=null,t2=null;const stop=()=>{clearTimeout(t1);clearInterval(t2);btn.classList.remove('down')};
-  btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.classList.add('down');press(id);if(REPEAT.has(id)){t1=setTimeout(()=>{t2=setInterval(()=>press(id),55)},380)}});
+function bindKey(btn,id){let t1=null,t2=null;const stop=()=>{clearTimeout(t1);clearInterval(t2);btn.classList.remove('pressed')};
+  btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.classList.add('pressed');press(id);if(REPEAT.has(id)){t1=setTimeout(()=>{t2=setInterval(()=>press(id),55)},380)}});
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,stop))}
 function buildKeys(){const K=$('#keys');
   for(const k of KEYS){
-    if(k==='DPAD'){const d=document.createElement('div');d.id='dpad';d.innerHTML='<button class="up" data-k="up" aria-label="up">▲</button><button class="left" data-k="left" aria-label="left">◀</button><button class="right" data-k="right" aria-label="right">▶</button><button class="down" data-k="down" aria-label="down">▼</button>';K.appendChild(d);d.querySelectorAll('button').forEach(b=>bindKey(b,b.dataset.k));continue}
+    if(k==='DPAD'){const d=document.createElement('div');d.id='dpad';d.innerHTML='<button class="dp-up" data-k="up" aria-label="up">▲</button><button class="dp-left" data-k="left" aria-label="left">◀</button><button class="dp-right" data-k="right" aria-label="right">▶</button><button class="dp-down" data-k="down" aria-label="down">▼</button>';K.appendChild(d);d.querySelectorAll('button').forEach(b=>bindKey(b,b.dataset.k));continue}
     const[id,main,s2,sa,cls]=k;const w=document.createElement('div');w.className='kw '+(cls||'');
     w.innerHTML=`<div class="lbl"><span class="s2">${s2}</span><span class="sa">${sa}</span></div><button class="key ${cls||''}" data-k="${id}" aria-label="${id}">${main}</button>`;
     K.appendChild(w);bindKey(w.querySelector('button'),id)}}
 const KB={'.':'dot','+':'add','-':'sub','*':'mul','/':'div','^':'pow','(':'lp',')':'rp',',':'comma',Enter:'enter','=':'enter',Delete:'del',Escape:'clear',ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',x:'xt',X:'xt',Home:'on'};
 document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;let k=/^[0-9]$/.test(e.key)?e.key:KB[e.key];
   if(e.key==='Backspace'){e.preventDefault();if(S.shift)S.shift=null;try{action('bksp')}catch(er){if(er.calc)S.err={msg:er.message}}save();render();return}
-  if(k){e.preventDefault();const b=document.querySelector(`[data-k="${k}"]`);if(b){b.classList.add('down');setTimeout(()=>b.classList.remove('down'),90)}press(k)}});
+  if(k){e.preventDefault();const b=document.querySelector(`[data-k="${k}"]`);if(b){b.classList.add('pressed');setTimeout(()=>b.classList.remove('pressed'),90)}press(k)}});
 function fit(){const c=$('#calc'),wr=$('#wrap');const w=404,h=c.offsetHeight;const s=Math.min(1.25,(window.innerWidth-12)/w,Math.max(0.55,(window.innerHeight-60)/h));c.style.transform=`scale(${s})`;wr.style.width=w*s+'px';wr.style.height=h*s+'px'}
 load();buildKeys();render();fit();window.addEventListener('resize',fit);
 </script>
